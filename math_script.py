@@ -1,21 +1,6 @@
-# display_problem() 실행할 때, 폴더가 있다면 그 안에 있는 파일 삭제함.
-# base.png 파일 수정함
-# 문제 추천, 최종 파일 폴더에 모아두기 < 이것만 수정하면 됨
-# chatgpt에서 참고하기
-# 정답확인해야 피드백 확인할 수 있는 것으로 수정 중인데... 약간 꼬임
-# 확인할 것
-# fifth_streak, fourth_streak는 evaulate_answer()에서 조정하기
-# recommend는 출력된 문제 번호만 나가도록 하기
-# 이렇게 마무리하기~!
-
-
-!pip install openai==0.28
 import openai
-
-# open ai에서 발급받은 api key를 등록합니다
-OPENAI_YOUR_KEY = "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"
-openai.api_key = OPENAI_YOUR_KEY
-
+import runpy
+import os
 from IPython.display import display, HTML, Markdown
 from google.colab import _frontend, output
 from PIL import Image
@@ -34,6 +19,9 @@ global can_request_feedback
 global toggle
 global fourth_streak, fifth_streak, solved_correctly
 global init_difficulty
+
+output.clear()
+output.no_vertical_scroll()
 
 init_difficulty = None
 
@@ -190,6 +178,8 @@ def generate_html_script(question_id):
                 ctx.beginPath();
                 ctx.moveTo(e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop);
                 currentAction.push({{ x: e.clientX - canvas.offsetLeft, y: e.clientY - canvas.offsetTop, type: 'start' }});
+                document.addEventListener('touchmove', preventScroll, {{ passive: false }});
+
                 canvas.addEventListener('pointermove', onPaint, false);
             }}
         }});
@@ -201,6 +191,9 @@ def generate_html_script(question_id):
                 saveStroke();
                 currentAction = [];
                 undoneActions = [];
+
+                document.removeEventListener('touchmove', preventScroll);
+
                 canvas.removeEventListener('pointermove', onPaint, false);
             }}
         }});
@@ -511,13 +504,14 @@ def feedback_func() :
     global current_question_id
     global step_content
     global df
+
     question_1 = df[df['id'] == current_question_id]['question']
     answer_1 = df[df['id'] == current_question_id]['solution']
 
     # 사용 모델을 설정합니다. chat GPT는 gpt-4o-mini를 사용합니다.
     MODEL = "gpt-4o-mini"
     USER_INPUT_MSG = f'문제는 {question_1}이고 이에 대한 해설은 {answer_1}이야. 해설을 바탕으로 문제를 해결하기 위한 피드백을 system prompt를 바탕으로 피드백을 4단계로 만들어서 줘'
-
+    runpy.run_path('/content/math/mango.py')
     response = openai.ChatCompletion.create(
         model=MODEL,
         messages=[
@@ -537,6 +531,7 @@ def feedback_func() :
         step_content.append(cleaned_string)
       else:
         print(f"{i+1}단계 내용을 찾을 수 없습니다.")
+    del openai.api_key
 
 
 def output_feedback() :
