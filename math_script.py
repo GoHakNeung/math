@@ -510,7 +510,7 @@ def feedback_func() :
 
     # 사용 모델을 설정합니다. chat GPT는 gpt-4o-mini를 사용합니다.
     MODEL = "gpt-4o-mini"
-    USER_INPUT_MSG = f'문제는 {question_1}이고 이에 대한 해설은 {answer_1}이야. 해설을 바탕으로 문제를 해결하기 위한 피드백을 system prompt를 바탕으로 피드백을 4단계로 만들어서 줘'
+    USER_INPUT_MSG = f'문제는 {question_1}이고 이에 대한 해설은 {answer_1}이야. 해설을 바탕으로 문제를 해결하기 위한 피드백을 system prompt를 바탕으로 피드백을 4단계로 만들어서 줘, 피드백은 ;로 구분해서 제공해 줘'
     runpy.run_path('/content/math/mango.py')
     response = openai.ChatCompletion.create(
         model=MODEL,
