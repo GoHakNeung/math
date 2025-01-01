@@ -178,7 +178,6 @@ def generate_html_script(question_id):
                 ctx.beginPath();
                 ctx.moveTo(e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop);
                 currentAction.push({{ x: e.clientX - canvas.offsetLeft, y: e.clientY - canvas.offsetTop, type: 'start' }});
-                document.addEventListener('touchmove', preventScroll, {{ passive: false }});
 
                 canvas.addEventListener('pointermove', onPaint, false);
             }}
@@ -192,7 +191,6 @@ def generate_html_script(question_id):
                 currentAction = [];
                 undoneActions = [];
 
-                document.removeEventListener('touchmove', preventScroll);
 
                 canvas.removeEventListener('pointermove', onPaint, false);
             }}
