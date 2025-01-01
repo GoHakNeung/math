@@ -523,8 +523,7 @@ def feedback_func() :
     # step_content = [feedback[i].strip() for i in range(len(feedback)) if feedback[i].strip().startswith(f'{i+1}단계:')] # 이렇게 한줄로 처리할 수도 있다.
 
     step_content = []
-    print(feedback)
-    print(openai.api_key)
+
     for i in range(len(feedback)) :
       cleaned_string = feedback[i].strip()  # 앞뒤 공백 제거
       if cleaned_string.startswith(f'{i+1}단계:'):
@@ -566,10 +565,10 @@ def reset_image() :
 
     # 파일명 변경
     files = [f for f in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, f)) and f.endswith((".png", ".jpg"))]
-    print("정렬전, ", files)
+    # print("정렬전, ", files)
     # 파일 이름 정렬 (숫자가 포함된 경우에도 올바르게 정렬되도록)
     files.sort()
-    print("정렬 후, ", files)
+    # print("정렬 후, ", files)
     # 2-2. 가장 마지막 .png 파일 이름에 _1 추가
     if files:
         last_file = files[-1]
