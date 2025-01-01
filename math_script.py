@@ -523,6 +523,8 @@ def feedback_func() :
     # step_content = [feedback[i].strip() for i in range(len(feedback)) if feedback[i].strip().startswith(f'{i+1}단계:')] # 이렇게 한줄로 처리할 수도 있다.
 
     step_content = []
+    print(feedback)
+    print(openai.api_key)
     for i in range(len(feedback)) :
       cleaned_string = feedback[i].strip()  # 앞뒤 공백 제거
       if cleaned_string.startswith(f'{i+1}단계:'):
