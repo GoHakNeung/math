@@ -583,7 +583,7 @@ def reset_image() :
         os.rename(os.path.join(folder_path, 'base.jpg'), new_file_path)
 
 
-    print(f"base.png has been renamed to {new_file_name} in {folder_path}")
+    # print(f"base.png has been renamed to {new_file_name} in {folder_path}")
 
 
 # 아래는 문제 추천
