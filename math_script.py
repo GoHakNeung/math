@@ -319,6 +319,7 @@ def combine_images(base_image_path, overlay_image_path, output_image_path):
         # print(f"Images combined and saved to {output_image_path}")
 
     except :
+        pass
         # print('파일이 없습니다.')
 
 
