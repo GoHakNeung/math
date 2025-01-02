@@ -713,8 +713,8 @@ def recommend_problem(current_problem_id, _solved_correctly, _fourth_streak, _fi
             ]
 
 
-    print("fourth_streak, fifth_streak, solved_correctly", fourth_streak, fifth_streak, solved_correctly)
-    print(recommendations)
+    # print("fourth_streak, fifth_streak, solved_correctly", fourth_streak, fifth_streak, solved_correctly)
+    # print(recommendations)
     # Select a random problem
     if not recommendations.empty:
         recommended_problem = recommendations.sample(n=min(3, len(recommendations))).sample(1).iloc[0]
