@@ -316,10 +316,10 @@ def combine_images(base_image_path, overlay_image_path, output_image_path):
 
         # Save the combined image
         base_image.save(output_image_path)
-        print(f"Images combined and saved to {output_image_path}")
+        # print(f"Images combined and saved to {output_image_path}")
 
     except :
-        print('파일이 없습니다.')
+        # print('파일이 없습니다.')
 
 
 
