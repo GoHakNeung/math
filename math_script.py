@@ -172,6 +172,14 @@ def generate_html_script(question_id):
         }};
         backgroundImage.src = 'https://gohakneung.github.io/math.github.io/img/question/question_{question_id}.png';
 
+        canvas.addEventListener('touchstart', (event) => {{
+            event.preventDefault();
+        }}, {{ passive: false }});
+
+        canvas.addEventListener('touchmove', (event) => {{
+            event.preventDefault();
+        }}, {{ passive: false }});
+
         canvas.addEventListener('pointerdown', function(e) {{
             if (e.pointerType === 'pen' || e.pointerType === 'touch' || e.pointerType === 'mouse') {{
                 isDrawing = true;
