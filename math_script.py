@@ -16,9 +16,13 @@ global step_content
 global feedback_try
 global df
 global can_request_feedback
-global toggle
+global toggle, toggle_recommend
 global fourth_streak, fifth_streak, solved_correctly
 global init_difficulty
+global pre_answer
+
+toggle_recommend = False
+pre_answer = ''
 
 output.clear()
 output.no_vertical_scroll()
@@ -304,6 +308,10 @@ def generate_html_script(question_id):
     </script>
     """
 
+os.makedirs("/content/final", exist_ok=True)  # Ensure folder creation
+
+
+
 def make_white_image() :
   img = Image.new('RGB', (700, 800), color = 'white')
 
@@ -388,6 +396,10 @@ def display_problem(question_id):
     global current_question_id
     current_question_id = question_id
 
+    global pre_answer
+    pre_answer = ''
+
+
     if init_difficulty == None :
         init_difficulty = df[df['id'] == question_id]['difficulty'].iloc[0]
 
@@ -460,8 +472,10 @@ def print_to_text(text) :
 
 def evaluate_answer():
     global can_request_feedback
-    global toggle
+    global toggle, toggle_recommend
     global fourth_streak, fifth_streak, solved_correctly
+    global pre_answer
+
     try:
         global current_question_id
         global df
@@ -473,6 +487,8 @@ def evaluate_answer():
         answer_file_path = f'/content/answer_{current_question_id}.txt' #
         with open(answer_file_path, 'r') as file:
             student_answers = file.read().strip().split(',')
+
+
         # print(student_answers)
         # Find the corresponding row in the DataFrame
         question_row = df[df['id'] == current_question_id]
@@ -485,22 +501,27 @@ def evaluate_answer():
         correct_answers = [answer.strip() for answer in correct_answers]
         # print(correct_answers)
 
-
+        if pre_answer != student_answers : 
         # Compare student's answer with the correct answer(s)
-        if all(answer.strip() in correct_answers for answer in student_answers):
-            print(f"정답입니다.")
-            solved_correctly = True
-            fifth_streak += 1
-            if fifth_streak == 6 :
-                fourth_streak += 1
-        else:
-            print(f"오답입니다.")
-            solved_correctly = False
-            fifth_streak -= 1
-            if fifth_streak < 0 :
-                fifth_streak = 0
-        create_gif_with_pillow()
-        toggle = True
+            if all(answer.strip() in correct_answers for answer in student_answers):
+                print(f"정답입니다.")
+                solved_correctly = True
+                # fifth_streak += 1
+                # if fifth_streak == 6 :
+                #     fourth_streak += 1
+            else:
+                print(f"오답입니다.")
+                solved_correctly = False
+                # fifth_streak -= 1
+                # if fifth_streak < 0 :
+                #     fifth_streak = 0
+            create_gif_with_pillow()
+            toggle = True
+            toggle_recommend = True
+            pre_answer = student_answers
+
+        else : 
+            print('문제를 풀고 확인해주세요.')
     except FileNotFoundError:
         print("Error: answer.txt file not found.")
     except Exception as e:
@@ -517,7 +538,7 @@ def feedback_func() :
 
     # 사용 모델을 설정합니다. chat GPT는 gpt-4o-mini를 사용합니다.
     MODEL = "gpt-4o-mini"
-    USER_INPUT_MSG = f'문제는 {question_1}이고 이에 대한 해설은 {answer_1}이야. 해설을 바탕으로 문제를 해결하기 위한 피드백을 system prompt를 바탕으로 피드백을 4단계로 만들어서 줘, 피드백은 ;로 구분하고 1단계, 2단계, 3단계, 4단계를 붙여서 줘.'
+    USER_INPUT_MSG = f'문제는 {question_1}이고 이에 대한 해설은 {answer_1}이야. 해설을 바탕으로 문제를 해결하기 위한 피드백을 system prompt를 바탕으로 피드백을 4단계로 만들어서 줘, 피드백은 ;로 구분해 줘. 꼭 ;로 구분해서 줘야 해'
     # runpy.run_path('/content/math/mango.py')
     import subprocess
     result = subprocess.run(['python','/content/math/mango.py'], capture_output = True, text = True)
@@ -540,8 +561,11 @@ def feedback_func() :
 
     for i in range(len(feedback)) :
       cleaned_string = feedback[i].strip()  # 앞뒤 공백 제거
-      if cleaned_string.startswith(f'{i+1}단계:'):
-        step_content.append(cleaned_string)
+      if cleaned_string != 0 :
+        if cleaned_string.startswith(f'{i+1}단계:') : 
+          step_content.append(cleaned_string)
+        else : 
+          step_content.append(f'{i+1}단계: '+cleaned_string)
       else:
         print(f"{i+1}단계 내용을 찾을 수 없습니다.")
     del openai.api_key
@@ -598,13 +622,47 @@ def reset_image() :
 # 아래는 문제 추천
 # Initialize streaks
 
+# 마지막 파일 필터링을 위한 정렬 함수
+def get_last_file_by_extension(folder, extension):
+    files = [f for f in os.listdir(folder) if f.endswith(extension) and os.path.isfile(os.path.join(folder, f))]
+    files.sort(key=lambda x: x.lower())
+    return files[-1] if files else None
+
 
 def create_scratch_cell():
     global current_question_id
     global fourth_streak, fifth_streak, solved_correctly
+    global toggle_recommend
 
-    recommend_id = recommend_problem(current_question_id, solved_correctly, fourth_streak, fifth_streak)
-    _frontend.create_scratch_cell(f"#이 코드셀을 실행하세요. \ndisplay_problem({recommend_id})")
+    folder_path = f'/content/{current_question_id}'
+    destination_path = '/content/final'
+
+
+
+    if toggle_recommend == True : 
+
+        recommend_id = recommend_problem(current_question_id, solved_correctly, fourth_streak, fifth_streak)
+        _frontend.create_scratch_cell(f"#이 코드셀을 실행하세요. \ndisplay_problem({recommend_id})")
+
+
+        last_gif = get_last_file_by_extension(folder_path, ".gif")
+        if last_gif:
+            gif_source = os.path.join(folder_path, last_gif)
+            gif_destination = os.path.join(destination_path, last_gif)
+            shutil.copy(gif_source, gif_destination)
+            # print(f"Moved .gif file: {last_gif} to {destination_path}")
+
+        last_png = get_last_file_by_extension(folder_path, ".png")
+        if last_png:
+            png_source = os.path.join(folder_path, last_png)
+            png_destination = os.path.join(destination_path, f"{current_question_id}.png")
+            shutil.copy(png_source, png_destination)
+            # print(f"Moved .png file: {last_png} to {destination_path}")
+
+        
+        toggle_recommend = False
+    else : 
+        print('문제 해결 후 추천 받으세요.')
     # next_question = recommend_next_question(globals_variable.question_num, globals_variable.final_result, question_info, attempts)
     # if next_question == '추천 문제가 없습니다.' :
     #     _frontend.create_scratch_cell(f"#{next_question}.\n#노트북으로 돌아가세요.")
@@ -617,6 +675,16 @@ def create_scratch_cell():
 def recommend_problem(current_problem_id, _solved_correctly, _fourth_streak, _fifth_streak):
     global df
     global fourth_streak, fifth_streak, solved_correctly
+
+    if solved_correctly == True :
+        fifth_streak += 1
+        if fifth_streak == 6 :
+            fourth_streak += 1
+
+    else : 
+        fifth_streak -= 1
+        if fifth_streak < 0 :
+            fifth_streak = 0
     # Get the current problem details
     current_problem = df[df['id'] == current_problem_id]
 
