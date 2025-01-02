@@ -484,7 +484,7 @@ def evaluate_answer():
         correct_answers = str(question_row.iloc[0]['answer']).split(',')
         correct_answers = [answer.strip() for answer in correct_answers]
         # print(correct_answers)
-        create_gif_with_pillow()
+
 
         # Compare student's answer with the correct answer(s)
         if all(answer.strip() in correct_answers for answer in student_answers):
@@ -499,7 +499,7 @@ def evaluate_answer():
             fifth_streak -= 1
             if fifth_streak < 0 :
                 fifth_streak = 0
-
+        create_gif_with_pillow()
         toggle = True
     except FileNotFoundError:
         print("Error: answer.txt file not found.")
