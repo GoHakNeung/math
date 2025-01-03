@@ -219,15 +219,18 @@ def generate_html_script(question_id):
         }};
 
         function saveStroke() {{
-            const filename = `image${{formatFrameCount(frameCount++)}}.png`;
-            canvas.toBlob(function(blob) {{
-                const reader = new FileReader();
-                reader.onload = function() {{
-                    const buffer = new Uint8Array(reader.result);
-                    google.colab.kernel.invokeFunction('notebook.save_image', [folderPath + filename, Array.from(buffer)], {{}});
-                }};
-                reader.readAsArrayBuffer(blob);
-            }});
+            if (frameCount % 2 === 0) {{
+                const filename = `image${{formatFrameCount(frameCount)}}.png`;
+                canvas.toBlob(function(blob) {{
+                    const reader = new FileReader();
+                    reader.onload = function() {{
+                        const buffer = new Uint8Array(reader.result);
+                        google.colab.kernel.invokeFunction('notebook.save_image', [folderPath + filename, Array.from(buffer)], {{}});
+                    }};
+                    reader.readAsArrayBuffer(blob);
+                }});
+            }}
+            frameCount ++;
         }}
 
         function undoLastAction() {{
